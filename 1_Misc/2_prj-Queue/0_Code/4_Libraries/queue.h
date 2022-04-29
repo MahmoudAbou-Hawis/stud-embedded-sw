@@ -16,3 +16,4 @@ bool isFull(struct queue *Queue);
 void createQueue(struct queue *Queue,int capacity);
 bool lengh(struct queue *Queue);
 void display(struct queue *Queue);
+void clear(struct queue *Queue);

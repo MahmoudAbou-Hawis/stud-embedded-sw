@@ -50,3 +50,8 @@ void display(struct queue *Queue){
         for(int i = 0 ;i < Queue->size ;i++)
             printf("%d ",Queue->Array[i]);
 }
+void clear(struct queue *Queue){
+    Queue->front=0;
+    Queue->rear = -1;
+    Queue->size =0;
+}
