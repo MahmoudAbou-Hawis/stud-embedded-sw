@@ -21,6 +21,9 @@ struct stack *Stack = (struct stack*)malloc(sizeof(struct stack));
  pop(Stack);
  push(Stack,40);
  display(Stack);
+   printf("\n");
+   pop(Stack);
+ printf("%d",size(Stack));
 
     return 0;
 }

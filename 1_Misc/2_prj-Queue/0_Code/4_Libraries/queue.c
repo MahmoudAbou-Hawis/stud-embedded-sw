@@ -47,11 +47,22 @@ int peek(struct queue *Queue){
 }
 void display(struct queue *Queue){
     if(!isEmpty(Queue))
-        for(int i = 0 ;i < Queue->size ;i++)
+    for(int i = Queue->front ;i < Queue->size ;i++)
             printf("%d ",Queue->Array[i]);
 }
 void clear(struct queue *Queue){
     Queue->front=0;
     Queue->rear = -1;
     Queue->size =0;
+}
+
+void resize(struct queue *Queue , int newSize){
+Queue->Capacity =newSize;
+Queue->Array = realloc(Queue->Array,newSize * (sizeof(int)));    
+Queue->rear = (newSize-1 < Queue->rear)?newSize-1 : Queue->rear;
+Queue->size = (Queue->rear >= Queue->front)? (Queue->rear-Queue->front+1):0;
+if(Queue->front > Queue->rear){
+    Queue->rear=-1;
+    Queue->front=0;
+}
 }

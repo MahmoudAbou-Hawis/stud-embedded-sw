@@ -54,3 +54,6 @@ void display(struct stack *Stack ){
         printf("%d ",Stack->Array[i]);
     
 }
+void clear(struct  stack *Stack){
+    Stack->Top=-1;
+}

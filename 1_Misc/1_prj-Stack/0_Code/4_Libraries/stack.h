@@ -15,3 +15,4 @@ bool isEmpety(struct stack *Stack);
 bool isFull(struct stack *Stack);
 void createStack(struct stack *Stack, int capacity);
 void display(struct stack *Stack );
+void clear(struct  stack *Stack);
