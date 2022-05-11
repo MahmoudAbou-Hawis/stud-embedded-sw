@@ -12,9 +12,9 @@ int main()
     /* Program Loop */
     while (1)
     {
-        digital_write(GPIO_B,5,High);
+        digital_write(GPIO_B, 5, High);
         _delay_ms(1000);
-        digital_write(GPIO_B,5,Low);
+        digital_write(GPIO_B, 5, Low);
         _delay_ms(1000);
     }
 
