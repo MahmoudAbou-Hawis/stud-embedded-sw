@@ -4,18 +4,20 @@
 
 int main()
 {
-    /* This program should blink pin 13 of Arduino Uno */
+    /* This program should blink pin 13 of Arduino Uno  when pressing button */
 
     /* Initialization */
     Pin_mode(GPIO_B, 5, Output);
+    Pin_mode(GPIO_C,2,Input);
 
     /* Program Loop */
     while (1)
     {
-        digital_write(GPIO_B, 5, High);
-        _delay_ms(1000);
-        digital_write(GPIO_B, 5, Low);
-        _delay_ms(1000);
+        if(pinStaus(GPIO_C,2)){
+        digital_write(GPIO_B,5,High);
+        }else{
+            digital_write(GPIO_B,5,Low);
+        }
     }
 
     return 0;
