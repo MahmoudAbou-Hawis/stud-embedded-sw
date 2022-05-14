@@ -2,10 +2,14 @@
 
 void Pin_mode(GPIO* port , uint8_t _bit ,GPIO_tenmGpioPinDir enmPinDir)
 {
-    if(enmPinDir==Input)
+    if(enmPinDir!=Output ){
         port->dDirRegister&=~(1<<_bit);
+        if(enmPinDir == Input_Pullup)
+            port->pinRegister|=(1<<_bit);
+    }
     else
-        port->dDirRegister|=(1<<_bit);
+       port->dDirRegister|=(1<<_bit);
+         
 }
 
 void digital_write(GPIO* port , uint8_t _bit ,GPIO_action enmAct)

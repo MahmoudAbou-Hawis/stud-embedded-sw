@@ -19,7 +19,8 @@ typedef struct
 typedef enum
 {
     Input  = 0,
-    Output = 1
+    Output = 1,
+    Input_Pullup 
 } GPIO_tenmGpioPinDir;
 
 typedef enum
