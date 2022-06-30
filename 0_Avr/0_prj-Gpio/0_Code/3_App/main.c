@@ -2,21 +2,27 @@
 #include <util/delay.h>
 
 
+#define BUTTON_PIN     2
+#define LED_PIN        5
+
 int main()
 {
     /* This program should blink pin 13 of Arduino Uno  when pressing button */
 
     /* Initialization */
-    Pin_mode(GPIO_B, 5, Output);
-    Pin_mode(GPIO_C,2,Input);
+    Pin_mode(GPIO_B, LED_PIN, Output);
+    Pin_mode(GPIO_C, BUTTON_PIN, Input);
 
     /* Program Loop */
     while (1)
     {
-        if(pinStaus(GPIO_C,2)){
-        digital_write(GPIO_B,5,High);
-        }else{
-            digital_write(GPIO_B,5,Low);
+        if(pinStaus(GPIO_C, BUTTON_PIN))
+        {
+            digital_write(GPIO_B, LED_PIN, High);
+        }
+        else
+        {
+            digital_write(GPIO_B, LED_PIN, Low);
         }
     }
 
