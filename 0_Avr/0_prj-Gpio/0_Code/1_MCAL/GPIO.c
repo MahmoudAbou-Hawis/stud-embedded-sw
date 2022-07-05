@@ -1,54 +1,54 @@
 #include "GPIO.h"
 #include "StdTypes.h"
 
-void PinMode(Gpio_tstPort *pBort, uint8 u8Bit, GPIO_tenmGPIOPinDir EnmPinDir)
+void Gpio_vPinMode(Gpio_tstPort *pPort, uint8 u8Bit, GPIO_tenmGPIOPinDir EnmPinDir)
 {
     if (EnmPinDir != GPIO_OUTPUT)
     {
-        pBort->u8DirRegister &= ~(1 << u8Bit);
+        pPort->u8DirRegister &= ~(1 << u8Bit);
         if (EnmPinDir == GPIO_INPUT_PULLUP)
         {
-            pBort->u8PortRegister |= (1 << u8Bit);
+            pPort->u8PortRegister |= (1 << u8Bit);
         }
         else
         {
-            pBort->u8PortRegister &= ~(1 << u8Bit);
+            pPort->u8PortRegister &= ~(1 << u8Bit);
         }
     }
     else
     {
-        pBort->u8DirRegister |= (1 << u8Bit);
+        pPort->u8DirRegister |= (1 << u8Bit);
     }
 }
 
-void pinModePort(Gpio_tstPort *pBort, uint8 u8PortMask)
+void Gpio_vPinModePort(Gpio_tstPort *pPort, uint8 u8PortMask)
 {
-    pBort->u8DirRegister = u8PortMask;
+    pPort->u8DirRegister = u8PortMask;
 }
 
-void configurePullUps(Gpio_tstPort *pBort, uint8 u8InputPullupMask)
+void Gpio_vConfigurePullUps(Gpio_tstPort *pPort, uint8 u8InputPullupMask)
 {
-    pBort->u8PortRegister = u8InputPullupMask;
+    pPort->u8PortRegister = u8InputPullupMask;
 }
 
-void DigitalWrite(Gpio_tstPort *pBort, uint8 u8Bit, GPIO_tenmAction EnmAct)
+void Gpio_vDigitalWrite(Gpio_tstPort *pPort, uint8 u8Bit, Gpio_tenmLevel EnmAct)
 {
-    if (EnmAct == HIGH)
+    if (EnmAct == GPIO_LEVEL_HIGH)
     {
-        pBort->u8PortRegister |= (1 << u8Bit);
+        pPort->u8PortRegister |= (1 << u8Bit);
     }
     else
     {
-        pBort->u8PortRegister &= ~(1 << u8Bit);
+        pPort->u8PortRegister &= ~(1 << u8Bit);
     }
 }
 
-void DigitalWritePort(Gpio_tstPort *pBort, uint8 u8Mask)
+void Gpio_vDigitalWritePort(Gpio_tstPort *pPort, uint8 u8Mask)
 {
-    pBort->u8PortRegister = u8Mask;
+    pPort->u8PortRegister = u8Mask;
 }
 
-Gpio_tenmLevel PinStaus(Gpio_tstPort *pBort, uint8 u8Bit)
+Gpio_tenmLevel Gpio_enmPinStaus(Gpio_tstPort *pPort, uint8 u8Bit)
 {
-    return pBort->u8PinRegister & (1 << u8Bit) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
+    return pPort->u8PinRegister & (1 << u8Bit) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
 }

@@ -11,9 +11,9 @@
 #define PORTC_BASE ((uint8)0x26)
 #define PORTD_BASE ((uint8)0x29)
 
-#define GPIO_B ((GPIO *)PORTB_BASE)
-#define GPIO_C ((GPIO *)PORTC_BASE)
-#define GPIO_D ((GPIO *)PORTD_BASE)
+#define GPIO_B ((Gpio_tstPort*)PORTB_BASE)
+#define GPIO_C ((Gpio_tstPort*)PORTC_BASE)
+#define GPIO_D ((Gpio_tstPort*)PORTD_BASE)
 
 typedef enum
 {
@@ -39,11 +39,11 @@ typedef struct
 
 } Gpio_tstPort;
 
-void PinMode(GPIO *pBort, uint8 u8Bit, GPIOTenmGPIOPinDir EnmPinDir);
-void DigitalWrite(GPIO *pBort, uint8 u8Bit, GPIOAction EnmAct);
-GPIOPinLevel PinStaus(GPIO *pBort, uint8 u8Bit);
-void pinModePort(GPIO *pBort, uint8 u8PortMask);
-void configurePullUps(GPIO *pBort, uint8 u8InputPullupMask);
-void DigitalWritePort(GPIO *pBort, uint8 u8Mask);
+void Gpio_vPinMode(Gpio_tstPort *pPort, uint8 u8Bit, GPIO_tenmGPIOPinDir EnmPinDir);
+void Gpio_vDigitalWrite(Gpio_tstPort *pPort, uint8 u8Bit, Gpio_tenmLevel EnmAct);
+Gpio_tenmLevel Gpio_enmPinStaus(Gpio_tstPort *pPort, uint8 u8Bit);
+void Gpio_vPinModePort(Gpio_tstPort *pPort, uint8 u8PortMask);
+void Gpio_vConfigurePullUps(Gpio_tstPort *pPort, uint8 u8InputPullupMask);
+void Gpio_vDigitalWritePort(Gpio_tstPort *pPort, uint8 u8Mask);
 
 #endif
