@@ -17,18 +17,11 @@
 
 typedef enum
 {
-    INPUT = 0,
-    OUTPUT = 1,
-    INPUT_PULLUP
+    GPIO_INPUT = 0,
+    GPIO_OUTPUT = 1,
+    GPIO_INPUT_PULLUP
 
 } GPIO_tenmGPIOPinDir;
-
-typedef enum
-{
-    LOW = 0,
-    HIGH = 1
-
-} GPIO_tenmAction;
 
 typedef enum
 {

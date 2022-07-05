@@ -3,10 +3,10 @@
 
 void PinMode(Gpio_tstPort *pBort, uint8 u8Bit, GPIO_tenmGPIOPinDir EnmPinDir)
 {
-    if (EnmPinDir != OUTPUT)
+    if (EnmPinDir != GPIO_OUTPUT)
     {
         pBort->u8DirRegister &= ~(1 << u8Bit);
-        if (EnmPinDir == INPUT_PULLUP)
+        if (EnmPinDir == GPIO_INPUT_PULLUP)
         {
             pBort->u8PortRegister |= (1 << u8Bit);
         }
