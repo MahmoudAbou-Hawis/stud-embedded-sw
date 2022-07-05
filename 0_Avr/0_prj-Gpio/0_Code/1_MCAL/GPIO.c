@@ -1,54 +1,54 @@
 #include "GPIO.h"
-#include "/home/sofar/stud-embedded-sw/0_Avr/0_prj-Gpio/0_Code/4_Libraries/StdTypes.h"
+#include "StdTypes.h"
 
-void PinMode(GPIO *pBort, uint8 u8Bit, GPIOTenmGPIOPinDir EnmPinDir)
+void PinMode(Gpio_tstPort *pBort, uint8 u8Bit, GPIO_tenmGPIOPinDir EnmPinDir)
 {
-    if (EnmPinDir != Output)
+    if (EnmPinDir != OUTPUT)
     {
-        pBort->u8dDirRegister &= ~(1 << u8Bit);
-        if (EnmPinDir == InputPullup)
+        pBort->u8DirRegister &= ~(1 << u8Bit);
+        if (EnmPinDir == INPUT_PULLUP)
         {
-            pBort->u8portRegister |= (1 << u8Bit);
+            pBort->u8PortRegister |= (1 << u8Bit);
         }
         else
         {
-            pBort->u8portRegister &= ~(1 << u8Bit);
+            pBort->u8PortRegister &= ~(1 << u8Bit);
         }
     }
     else
     {
-        pBort->u8dDirRegister |= (1 << u8Bit);
+        pBort->u8DirRegister |= (1 << u8Bit);
     }
 }
 
-void pinModePort(GPIO *pBort, uint8 u8PortMask)
+void pinModePort(Gpio_tstPort *pBort, uint8 u8PortMask)
 {
-    pBort->u8dDirRegister = u8PortMask;
+    pBort->u8DirRegister = u8PortMask;
 }
 
-void configurePullUps(GPIO *pBort, uint8 u8InputPullupMask)
+void configurePullUps(Gpio_tstPort *pBort, uint8 u8InputPullupMask)
 {
-    pBort->u8portRegister = u8InputPullupMask;
+    pBort->u8PortRegister = u8InputPullupMask;
 }
 
-void DigitalWrite(GPIO *pBort, uint8 u8Bit, GPIOAction EnmAct)
+void DigitalWrite(Gpio_tstPort *pBort, uint8 u8Bit, GPIO_tenmAction EnmAct)
 {
-    if (EnmAct == High)
+    if (EnmAct == HIGH)
     {
-        pBort->u8portRegister |= (1 << u8Bit);
+        pBort->u8PortRegister |= (1 << u8Bit);
     }
     else
     {
-        pBort->u8portRegister &= ~(1 << u8Bit);
+        pBort->u8PortRegister &= ~(1 << u8Bit);
     }
 }
 
-void DigitalWritePort(GPIO *pBort, uint8 u8Mask)
+void DigitalWritePort(Gpio_tstPort *pBort, uint8 u8Mask)
 {
-    pBort->u8portRegister = u8Mask;
+    pBort->u8PortRegister = u8Mask;
 }
 
-GPIOPinLevel PinStaus(GPIO *pBort, uint8 u8Bit)
+Gpio_tenmLevel PinStaus(Gpio_tstPort *pBort, uint8 u8Bit)
 {
-    return pBort->u8pinRegister & (1 << u8Bit) ? GPIOLevelHigh : GPIOLevelLow;
+    return pBort->u8PinRegister & (1 << u8Bit) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
 }

@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "/home/sofar/stud-embedded-sw/0_Avr/0_prj-Gpio/0_Code/4_Libraries/StdTypes.h"
+#include "StdTypes.h"
 
 #define PORTB_BASE ((uint8)0x23)
 #define PORTC_BASE ((uint8)0x26)
@@ -17,34 +17,34 @@
 
 typedef enum
 {
-    Input = 0,
-    Output = 1,
-    InputPullup
+    INPUT = 0,
+    OUTPUT = 1,
+    INPUT_PULLUP
 
-} GPIOTenmGPIOPinDir;
-
-typedef enum
-{
-    Low = 0,
-    High = 1
-
-} GPIOAction;
+} GPIO_tenmGPIOPinDir;
 
 typedef enum
 {
+    LOW = 0,
+    HIGH = 1
 
-    GPIOLevelLow = 0,
-    GPIOLevelHigh = 1
+} GPIO_tenmAction;
 
-} GPIOPinLevel;
+typedef enum
+{
+
+    GPIO_LEVEL_LOW = 0,
+    GPIO_LEVEL_HIGH = 1
+
+} Gpio_tenmLevel;
 
 typedef struct
 {
-    volatile uint8 u8pinRegister;
-    volatile uint8 u8dDirRegister;
-    volatile uint8 u8portRegister;
+    volatile uint8 u8PinRegister;
+    volatile uint8 u8DirRegister;
+    volatile uint8 u8PortRegister;
 
-} GPIO;
+} Gpio_tstPort;
 
 void PinMode(GPIO *pBort, uint8 u8Bit, GPIOTenmGPIOPinDir EnmPinDir);
 void DigitalWrite(GPIO *pBort, uint8 u8Bit, GPIOAction EnmAct);
