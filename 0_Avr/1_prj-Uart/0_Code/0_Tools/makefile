@@ -24,8 +24,9 @@ INCLUDE_FLAGS = -I ../1_MCAL/ \
 
 #Object files section
 OBJECTS_DIRECTORY = ./0_Outputs/
-OBJECTS.o = main2.o \
-GPIO.o
+OBJECTS.o = main.o \
+GPIO.o \
+Uart.o
 OBJECTS.elf = FW.elf
 OBJECTS.hex = FW.hex
 
