@@ -31,8 +31,13 @@
 /* PRIVATE DEFINES */
 /******************************************************************************/
 #define UART0_BASE (0xC0)
-#define TR_UART0 ((tstUartHandle *)UART0_BASE)
-
+#define TR_UART0   ((tstUartHandle *)UART0_BASE)
+#define UDRE0      (5)
+#define RXC0       (7)
+#define UCSZn2     (2)
+#define USBSn      (3)
+#define UPMn0      (4)
+#define UCSZn0     (1)
 /******************************************************************************/
 
 /******************************************************************************/
@@ -104,23 +109,49 @@ typedef struct
 /* PUBLIC FUNCTION DEFINITIONS */
 /******************************************************************************/
 
-void UART_vInit(void)
+void Uart_vInit(Uart_tstInitConfig* UartInit)
 {
-    TR_UART0->u16Ubrr = ((F_CLK / (16 * (uint32)9600)) - 1);
-    TR_UART0->u8UcsrB |= (1 << 3) | (1 << 4);
-    TR_UART0->u8UcsrC |= (3 << 1);
+    TR_UART0->u8UcsrB  = ((UartInit->u8InterruptType | UartInit->u8Direction) | (UartInit->enmCharSize & 1 << UCSZn2));
+    TR_UART0->u16Ubrr  = ((UartInit->u32SystemClock / (16 * (uint32)UartInit->u32BaudRate)) - 1);
+    TR_UART0->u8UcsrC  = (UartInit->enmCharSize != UART_SIZE_9) ? (UartInit->enmCharSize << UCSZn0): (UartInit->enmCharSize-1 << UCSZn0 );
+    TR_UART0->u8UcsrC |= ((UartInit->enmStopBits << USBSn) | (UartInit->enmParityType << UPMn0)) ;
+   
 }
 
-void UART_vTransmitByte(uint8 Byte)
+void Uart_vTransmitByte(uint8 Byte)
 {
-    while (!(TR_UART0->u8UcsrA & (1 << 5)));
+    while (!(TR_UART0->u8UcsrA & (1 << UDRE0)));
     TR_UART0->u8Udr = Byte;
 }
 
-uint8 UART_u8ReceiveByte(void)
+uint8 Uart_u8ReceiveByte(void)
 {
-    while (!(TR_UART0->u8UcsrA & (1 << 7)));
+    while (!(TR_UART0->u8UcsrA & (1 << RXC0)));
     return TR_UART0->u8Udr;
+}
+
+void  Uart_vTransmitBuff(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16))
+{
+    for(int idx = 0 ; idx < u16Length ; idx++)
+    {
+        Uart_vTransmitByte(((uint8*)pvBuff)[idx] );
+    }
+    if(pfnCallback != NULL)
+    {
+        (*pfnCallback)(pvBuff, u16Length);
+    }
+}
+
+void Uart_vReceiveBuff(void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16))
+{
+    for(int idx = 0 ; idx < u16Length ; idx++)
+    {
+       ((uint8*)pvBuff)[idx] = Uart_u8ReceiveByte();
+    }
+    if(pfnCallback != NULL)
+    {
+        (*pfnCallback)(pvBuff, u16Length);
+    }
 }
 
 /******************************************************************************/
