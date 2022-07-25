@@ -38,8 +38,9 @@ extern "C"
     /* INCLUDES */
     /******************************************************************************/
 
-#include <stdio.h>
 #include "StdTypes.h"
+#include <avr/interrupt.h>
+#include <stdbool.h>
 
     /******************************************************************************/
 
@@ -48,6 +49,7 @@ extern "C"
     /******************************************************************************/
 
 #define F_CLK (16000000.0)
+#define SERG  *(((volatile uint8*)0x5F))
 
     /******************************************************************************/
 
@@ -136,19 +138,20 @@ extern "C"
     /* PUBLIC FUNCTION PROTOTYPES */
     /******************************************************************************/
 
-    void Uart_vInit(Uart_tstInitConfig *UartInit);
-    void Uart_vTransmitByte(uint8 Byte);
-    uint8 Uart_u8ReceiveByte(void);
+    void Uart_vInit(Uart_tstInitConfig *stUartInit);
     void Uart_vTransmitBuff(void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16));
     void Uart_vReceiveBuff(void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16));
-
+    void Uart_vTransmitBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
+    void Uart_vReceiveBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
+    void Uart_vTransmitBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
+    void Uart_vReceiveBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
 /******************************************************************************/
 
 /******************************************************************************/
 /* C++ Style GUARD */
 /******************************************************************************/
 #ifdef __cplusplus
-}
+
 #endif /* __cplusplus */
 /******************************************************************************/
 
