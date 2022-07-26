@@ -24,7 +24,7 @@
 
 #include "Uart.h"
 #include "StdTypes.h"
-
+#include "Terminal.h"
 /******************************************************************************/
 
 /******************************************************************************/
@@ -89,6 +89,8 @@ void (*pfnReciveBufferCallback)(void *, uint16) = NULL ;
 int ReciveBufferindex = 0;
 
 bool RecivedFlag = 0;
+
+bool CorrectData = false;
 /******************************************************************************/
 
 /******************************************************************************/
@@ -227,6 +229,15 @@ void Uart_vReceiveBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallba
     pfnReciveBufferCallback = pfnCallback;
     u16ReciveBufferLength = u16Length;
 }
+bool Uart_readRecivedFlag(void)
+{
+    if(CorrectData)
+    {
+        CorrectData = false;
+        return true;
+    }
+    return false;
+}
 ISR(USART_TX_vect)
 {
       if(SendBufferindex == u16SendBufferLength)
@@ -241,15 +252,18 @@ ISR(USART_TX_vect)
        TR_UART0->u8Udr = ((uint8*)pvSendBuffer)[SendBufferindex++];
       }
 }
+
 ISR(USART_RX_vect)
 {
         ((uint8*) pvReciveBuffer)[ReciveBufferindex++] = TR_UART0->u8Udr; 
-        if(ReciveBufferindex == u16ReciveBufferLength)
+        if(((uint8*) pvReciveBuffer)[ReciveBufferindex-1]  == '/')
         { 
+            ((uint8*) pvReciveBuffer)[ReciveBufferindex]='\0';   
+            CorrectData =true;
             ReciveBufferindex = 0;
             if(pfnReciveBufferCallback != NULL)
                 {
-                (*pfnReciveBufferCallback)(pvReciveBuffer,u16ReciveBufferLength);
+                 (*pfnReciveBufferCallback)(pvReciveBuffer,u16ReciveBufferLength);
                 }
         }
       

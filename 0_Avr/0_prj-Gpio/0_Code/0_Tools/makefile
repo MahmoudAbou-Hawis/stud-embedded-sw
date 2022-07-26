@@ -1,4 +1,3 @@
-
 #Compilation variables section
 C_COMPILER = avr-gcc
 COMPILATION_FLAGS = -O0 -DF_CPU=16000000UL -mmcu=atmega328p

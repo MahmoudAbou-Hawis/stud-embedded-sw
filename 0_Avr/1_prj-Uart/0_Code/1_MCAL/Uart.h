@@ -38,9 +38,9 @@ extern "C"
     /* INCLUDES */
     /******************************************************************************/
 
-#include "StdTypes.h"
-#include <avr/interrupt.h>
-#include <stdbool.h>
+    #include "StdTypes.h"
+    #include <avr/interrupt.h>
+    #include <stdbool.h>
 
     /******************************************************************************/
 
@@ -48,8 +48,8 @@ extern "C"
     /* PUBLIC DEFINES */
     /******************************************************************************/
 
-#define F_CLK (16000000.0)
-#define SERG  *(((volatile uint8*)0x5F))
+    #define F_CLK (16000000.0)
+    #define SERG  *(((volatile uint8*)0x5F))
 
     /******************************************************************************/
 
@@ -131,9 +131,7 @@ extern "C"
     /******************************************************************************/
     /* PUBLIC VARIABLE DECLARATIONS */
     /******************************************************************************/
-
     /******************************************************************************/
-
     /******************************************************************************/
     /* PUBLIC FUNCTION PROTOTYPES */
     /******************************************************************************/
@@ -145,6 +143,7 @@ extern "C"
     void Uart_vReceiveBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
     void Uart_vTransmitBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
     void Uart_vReceiveBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
+    bool Uart_readRecivedFlag(void);
 /******************************************************************************/
 
 /******************************************************************************/

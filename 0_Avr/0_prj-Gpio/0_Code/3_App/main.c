@@ -19,7 +19,7 @@ int main()
     {
         if(Gpio_enmPinStaus(GPIO_C, BUTTON_PIN))
         {
-            Gpio_vDigitalWrite(GPIO_B, LED_PIN, GPIO_LEVEL_HIGH);
+            Gpio_vDigitalWrite(GPIO_B, LED_PIN, GPIO_LEVEL_HIGH);         
         }
         else
         {
