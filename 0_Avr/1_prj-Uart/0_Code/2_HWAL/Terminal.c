@@ -46,6 +46,15 @@
 /* PRIVATE ENUMS */
 /******************************************************************************/
 
+typedef enum
+{
+    LEDS_OFF     = 0,
+    LED_RED_ON   = 1,
+    LED_BLUE_ON  = 2,
+    LED_GREEN_ON = 4
+
+} tenmLedsStatus;
+
 /******************************************************************************/
 
 /******************************************************************************/
@@ -278,6 +287,14 @@ static void vCheckEnd(void* au8pvBuffer, uint16 u16Length)
     }
 }
 
+static void vLightLeds(int Bitwise)
+{
+        for(int Bit = 0 ;Bit < 3 ;Bit++)
+        {
+            Gpio_vDigitalWrite(GPIO_B,Bit,((Bitwise&(1<<Bit)))?GPIO_LEVEL_HIGH:GPIO_LEVEL_LOW);
+        }
+}
+
 /******************************************************************************/
 
 /******************************************************************************/
@@ -330,51 +347,35 @@ void Terminal_vMain(void)
         {
             if (bIsEqual("RED", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_HIGH);
+                vLightLeds(LED_RED_ON);
             }
             else if (bIsEqual("GREEN", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_HIGH);
+                vLightLeds(LED_GREEN_ON);
             }
             else if (bIsEqual("BLUE", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_HIGH);
+                vLightLeds(LED_BLUE_ON);
             }
             else if (bIsEqual("TURQUOSE", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_HIGH);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_HIGH);
+                vLightLeds((LED_BLUE_ON|LED_GREEN_ON));
             }
             else if (bIsEqual("ORANGE", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_HIGH);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_HIGH);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_LOW);
+                vLightLeds((LED_RED_ON|LED_GREEN_ON));
             }
             else if (bIsEqual("PURPLE", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_HIGH);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_HIGH);
+                vLightLeds((LED_RED_ON|LED_BLUE_ON));
             }
             else if (bIsEqual("WHITE", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_HIGH);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_HIGH);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_HIGH);
+                vLightLeds((LED_RED_ON|LED_BLUE_ON|LED_GREEN_ON));
             }
             else if (bIsEqual("OFF", au8Procss))
             {
-                Gpio_vDigitalWrite(GPIO_B, RED_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_LOW);
-                Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_LOW);
+                vLightLeds(LEDS_OFF);
             }
             Uart_vTransmitBuffInterrupt(pvUart,(void *)"ACK\n", 4, NULL);
         }
