@@ -49,7 +49,7 @@ extern "C"
 #define CFG_APP_TEST_UART            2
 
 
-#define CURRENT_APP                  CFG_APP_TEST_UART
+#define CURRENT_APP                  CFG_APP_MAIN
 
 /******************************************************************************/
 

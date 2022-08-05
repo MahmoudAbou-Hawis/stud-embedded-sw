@@ -27,9 +27,9 @@ OBJECTS_DIRECTORY = ./0_Outputs/
 OBJECTS.o = main.o \
 GPIO.o \
 Uart.o \
-TestUart.o
-# Terminal.o \
-# TestTerminal.o
+TestUart.o \
+Terminal.o \
+TestTerminal.o
 OBJECTS.elf = FW.elf
 OBJECTS.hex = FW.hex
 
