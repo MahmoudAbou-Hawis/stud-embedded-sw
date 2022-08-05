@@ -1,19 +1,19 @@
 /******************************************************************************/
 /**
- * @file <file-name>.h
- * @brief <file-short-description>
+ * @file Terminal.h
+ * @brief The header file of the terminal interface SW module
  *
  * @par Project Name
- * <project-name>
+ * Terminal Project
  *
  * @par Code Language
  * C
  *
  * @par Description
- * <file-long-description>
+ * The header file of the terminal interface SW module
  * 
  * @par Author
- * <author-name>
+ * Mahmoud Abou-Hawis
  *
  */
 /******************************************************************************/
@@ -37,8 +37,12 @@ extern "C"
 /******************************************************************************/
 /* INCLUDES */
 /******************************************************************************/
+
 #include "StdTypes.h"
 #include <stdbool.h>
+#include "Uart.h"
+#include "GPIO.h"
+
 /******************************************************************************/
 
 /******************************************************************************/
@@ -62,14 +66,6 @@ extern "C"
 /******************************************************************************/
 /* PUBLIC TYPES */
 /******************************************************************************/
-typedef  struct
-{
-    uint16 u16Size ;
-    uint16 *u16ptrNumbers;
-    uint8 *u8ptrSigns;
-
-}terminal_tstCalculator;
-
 
 
 /******************************************************************************/
@@ -83,12 +79,10 @@ typedef  struct
 /******************************************************************************/
 /* PUBLIC VARIABLE DECLARATIONS */
 /******************************************************************************/
-int terminal_vCalculate(uint16 u16LastNumber , uint16 u16SignIndex ,uint16 u16Index, terminal_tstCalculator *tstCal);
-uint16 terminal_u16ProcessCalculatorSentData(uint8 u8SentData[],uint16 u16Num[] ,uint8 u8sign[] , uint16 u16Size);
-void terminal_vAnalsysOperand(uint8 *DataSent ,uint8 *u8Command , uint8 *u8Process,uint16 u16Length );
-bool IsEqual(uint8 *ptrFirstString ,uint8 *ptrSecondString);
-uint16 u16length(uint8 *String);
-void Convert(int Number,uint8 *result );
+
+void Terminal_vInit(void);
+void Terminal_vMain(void);
+
 /******************************************************************************/
 
 /******************************************************************************/
@@ -108,5 +102,5 @@ void Convert(int Number,uint8 *result );
 /******************************************************************************/
 /* MULTIPLE INCLUSION GUARD */
 /******************************************************************************/
-#endif /* FILE_NAME_H */
+#endif /* TERMINAL_H */
 /******************************************************************************/

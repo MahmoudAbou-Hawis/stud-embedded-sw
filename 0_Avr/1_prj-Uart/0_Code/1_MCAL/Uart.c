@@ -1,7 +1,7 @@
 /******************************************************************************/
 /**
  * @file Uart.c
- * @brief Uart protocol implemention in c language 
+ * @brief Uart protocol implemention in c language
  *
  * @par Project Name
  * Uart Project
@@ -11,7 +11,7 @@
  *
  * @par Description
  * You can Transmit and receive with Uart protocol
- * 
+ *
  * @par Author
  * Mahmoud Abou-Hawis
  *
@@ -24,20 +24,22 @@
 
 #include "Uart.h"
 #include "StdTypes.h"
-#include "Terminal.h"
+//#include "Terminal.h"
+#include <stdlib.h>
 /******************************************************************************/
 
 /******************************************************************************/
 /* PRIVATE DEFINES */
 /******************************************************************************/
-#define UART0_BASE     (0xC0)
-#define TR_UART0       ((tstUartHandle *)UART0_BASE)
-#define BIT_UDRE0          (5)
-#define BIT_RXC0       (7)
-#define UCSZn2         (2)
-#define USBSn          (3)
-#define UPMn0          (4)
-#define UCSZn0         (1)
+#define UART0_BASE (0xC0)
+#define TR_UART0 ((tstUartHandle *)UART0_BASE)
+#define UART_HND ((tstUartHandle *)(pvUartHnd))
+#define BIT_UDRE0 (5)
+#define BIT_RXC0 (7)
+#define UCSZn2 (2)
+#define USBSn (3)
+#define UPMn0 (4)
+#define UCSZn0 (1)
 /******************************************************************************/
 
 /******************************************************************************/
@@ -67,6 +69,20 @@ typedef struct
 
 } tstUartHandle;
 
+
+typedef struct
+{
+    void * pvSendBuffer  ;
+    uint16 u16SendBufferLength;
+    void (*pfnSendBufferCallback)(void *, uint16) ;
+    int SendBufferindex ;
+    void * pvReciveBuffer  ;
+    uint16 u16ReciveBufferLength ;
+    void (*pfnReciveBufferCallback)(void *, uint16)  ;
+    int ReciveBufferindex ;
+    bool RecivedFlag ;
+} ConfUart;
+
 /******************************************************************************/
 
 /******************************************************************************/
@@ -78,19 +94,10 @@ typedef struct
 /******************************************************************************/
 /* PRIVATE VARIABLE DEFINITIONS */
 /******************************************************************************/
-void * pvSendBuffer = NULL ;
-uint16 u16SendBufferLength = 0;
-void (*pfnSendBufferCallback)(void *, uint16) = NULL ;
-int SendBufferindex = 0;
+tstUartHandle *UartAddresse[30] = {TR_UART0};
+ConfUart *Conf[30];
+static void *pvUartHndInt = NULL;
 
-void * pvReciveBuffer = NULL ;
-uint16 u16ReciveBufferLength = 0;
-void (*pfnReciveBufferCallback)(void *, uint16) = NULL ;
-int ReciveBufferindex = 0;
-
-bool RecivedFlag = 0;
-
-bool CorrectData = false;
 /******************************************************************************/
 
 /******************************************************************************/
@@ -108,8 +115,8 @@ bool CorrectData = false;
 /******************************************************************************/
 /* PRIVATE FUNCTION PROTOTYPES */
 /******************************************************************************/
-void Uart_vTransmitByte(uint8 u8Byte,uint16 u16TimeOut);
-uint8 Uart_u8ReceiveByte(uint16 u16TimeOut);
+void Uart_vTransmitByte(void *pvUartHnd, uint8 u8Byte, uint16 u16TimeOut);
+uint8 Uart_u8ReceiveByte(void *pvUartHnd, uint16 u16TimeOut);
 /******************************************************************************/
 
 /******************************************************************************/
@@ -121,154 +128,152 @@ uint8 Uart_u8ReceiveByte(uint16 u16TimeOut);
 /******************************************************************************/
 /* PUBLIC FUNCTION DEFINITIONS */
 /******************************************************************************/
-
-void Uart_vInit(Uart_tstInitConfig* UartInit)
+sint16 GetAddressIndex(void * Address)
 {
-    TR_UART0->u8UcsrB  = ((UartInit->u8InterruptType | UartInit->u8Direction) | (UartInit->enmCharSize & 1 << UCSZn2));
-    TR_UART0->u16Ubrr  = ((UartInit->u32SystemClock / (16 * (uint32)UartInit->u32BaudRate)) - 1);
-    TR_UART0->u8UcsrC  = (UartInit->enmCharSize != UART_SIZE_9) ? (UartInit->enmCharSize << UCSZn0): (UartInit->enmCharSize-1 << UCSZn0 );
-    TR_UART0->u8UcsrC |= ((UartInit->enmStopBits << USBSn) | (UartInit->enmParityType << UPMn0)) ;
-   
+    for(int i = 0 ; i < 1 ; i++)
+        if(UartAddresse[i] == (tstUartHandle *)Address)
+        {
+             return i;
+        }
 }
 
-void Uart_vTransmitByte(uint8 u8Byte , uint16 u16TimeOut)
+void *Uart_pvInit(Uart_tstInitConfig *UartInit)
 {
-     uint16 counter = 0;
-    while ((!(TR_UART0->u8UcsrA & (1 << BIT_UDRE0)))&&  (counter < u16TimeOut))counter++;
-    if(!u16TimeOut)
+    UartAddresse[UartInit->u8UartIdx]->u8UcsrB = ((UartInit->u8InterruptType | UartInit->u8Direction) | (UartInit->enmCharSize & 1 << UCSZn2));
+    UartAddresse[UartInit->u8UartIdx]->u16Ubrr = ((UartInit->u32SystemClock / (16 * (uint32)UartInit->u32BaudRate)) - 1);
+    UartAddresse[UartInit->u8UartIdx]->u8UcsrC = (UartInit->enmCharSize != UART_SIZE_9) ? (UartInit->enmCharSize << UCSZn0) : (UartInit->enmCharSize - 1 << UCSZn0);
+    UartAddresse[UartInit->u8UartIdx]->u8UcsrC |= ((UartInit->enmStopBits << USBSn) | (UartInit->enmParityType << UPMn0));
+    Conf[UartInit->u8UartIdx] = (ConfUart*)malloc(1 *sizeof(ConfUart));
+    Conf[UartInit->u8UartIdx]->RecivedFlag = 0;
+    return (void *)UartAddresse[UartInit->u8UartIdx];
+}
+
+void Uart_vTransmitByte(void *pvUartHnd, uint8 u8Byte, uint16 u16TimeOut)
+{
+    uint16 counter = 0;
+    while ((!(UART_HND->u8UcsrA & (1 << BIT_UDRE0))) && (counter < u16TimeOut))
+        counter++;
+    if (!u16TimeOut)
     {
         return;
     }
-    TR_UART0->u8Udr = u8Byte;
+    UART_HND->u8Udr = u8Byte;
 }
 
-uint8 Uart_u8ReceiveByte(uint16 u16TimeOut)
+uint8 Uart_u8ReceiveByte(void *pvUartHnd, uint16 u16TimeOut)
 {
     uint16 counter = 0;
-    while ((!(TR_UART0->u8UcsrA & (1 << BIT_RXC0))) &&  counter < u16TimeOut )counter++;
-    if(counter == u16TimeOut)
+    while ((!(UART_HND->u8UcsrA & (1 << BIT_RXC0))) && counter < u16TimeOut)
+        counter++;
+    if (counter == u16TimeOut)
     {
-        RecivedFlag = false;
+        Conf[GetAddressIndex(pvUartHnd)]->RecivedFlag = false;
     }
     else
     {
-        RecivedFlag = true;
+         Conf[GetAddressIndex(pvUartHnd)]->RecivedFlag = true;
     }
-    return TR_UART0->u8Udr;
+    return UART_HND->u8Udr;
 }
 
-void  Uart_vTransmitBuff(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16))
+void Uart_vTransmitBuff(void *pvUartHnd, void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16))
 {
-    for(int idx = 0 ; idx < u16Length ; idx++)
+    for (int idx = 0; idx < u16Length; idx++)
     {
-        while (!(TR_UART0->u8UcsrA & (1 << BIT_UDRE0)));
-         TR_UART0->u8Udr = ((uint8*)pvBuff)[idx];
-        
+        while (!(UART_HND->u8UcsrA & (1 << BIT_UDRE0)));
+        UART_HND->u8Udr = ((uint8 *)pvBuff)[idx];
     }
-    if(pfnCallback != NULL)
+    if (pfnCallback != NULL)
     {
         (*pfnCallback)(pvBuff, u16Length);
     }
 }
 
-void Uart_vReceiveBuff(void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16))
+void Uart_vReceiveBuff(void *pvUartHnd, void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16))
 {
-    for(int idx = 0 ; idx < u16Length ; idx++)
+    for (int idx = 0; idx < u16Length; idx++)
     {
-        while(!(TR_UART0->u8UcsrA & (1 << BIT_RXC0)));
-       ((uint8*)pvBuff)[idx] =   TR_UART0->u8Udr;
+        while (!(UART_HND->u8UcsrA & (1 << BIT_RXC0)));
+        ((uint8 *)pvBuff)[idx] = TR_UART0->u8Udr;
     }
-    if(pfnCallback != NULL)
+    if (pfnCallback != NULL)
     {
         (*pfnCallback)(pvBuff, u16Length);
     }
 }
 
-void Uart_vTransmitBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16))
+void Uart_vTransmitBuffTimeout(void *pvUartHnd, void *pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void *, uint16))
 {
-    for(int idx = 0 ; idx < u16Length ; idx++)
+    for (int idx = 0; idx < u16Length; idx++)
     {
-        Uart_vTransmitByte(((uint8*)pvBuff)[idx] , u16Timeout);
+        Uart_vTransmitByte(pvUartHnd, ((uint8 *)pvBuff)[idx], u16Timeout);
     }
-    if(pfnCallback != NULL)
+    if (pfnCallback != NULL)
     {
         (*pfnCallback)(pvBuff, u16Length);
     }
 }
 
- void Uart_vReceiveBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16))
- {
-    for(int idx = 0 ; idx < u16Length ; idx++)
+void Uart_vReceiveBuffTimeout(void *pvUartHnd, void *pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void *, uint16))
+{
+    for (int idx = 0; idx < u16Length; idx++)
     {
-        uint8 Data =  Uart_u8ReceiveByte(u16Timeout);
-        if(RecivedFlag)
+        uint8 Data = Uart_u8ReceiveByte(pvUartHnd, u16Timeout);
+        if ( Conf[GetAddressIndex(pvUartHnd)]->RecivedFlag)
         {
-             ((uint8*)pvBuff)[idx] = Data;
+            ((uint8 *)pvBuff)[idx] = Data;
         }
     }
-    if(pfnCallback != NULL)
+    if (pfnCallback != NULL)
     {
         (*pfnCallback)(pvBuff, u16Length);
     }
- }
-
-void Uart_vTransmitBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16))
-{
-    pvSendBuffer = pvBuff;
-    SendBufferindex = 1;
-    pfnSendBufferCallback = pfnCallback;
-    u16SendBufferLength = u16Length;
-    TR_UART0->u8Udr = ((uint8*)pvBuff)[0];
-
 }
 
-void Uart_vReceiveBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16))
+void Uart_vTransmitBuffInterrupt(void *pvUartHnd, void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16))
 {
-    pvReciveBuffer = pvBuff;
-    ReciveBufferindex = 0;
-    pfnReciveBufferCallback = pfnCallback;
-    u16ReciveBufferLength = u16Length;
+    Conf[GetAddressIndex(pvUartHnd)]->pvSendBuffer = pvBuff;
+    Conf[GetAddressIndex(pvUartHnd)]->SendBufferindex = 1;
+    Conf[GetAddressIndex(pvUartHnd)]->pfnSendBufferCallback = pfnCallback;
+    Conf[GetAddressIndex(pvUartHnd)]->u16SendBufferLength = u16Length;
+    UART_HND->u8Udr = ((uint8 *)pvBuff)[0];
 }
-bool Uart_readRecivedFlag(void)
+
+void Uart_vReceiveBuffInterrupt(void *pvUartHnd, void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16))
 {
-    if(CorrectData)
-    {
-        CorrectData = false;
-        return true;
-    }
-    return false;
+    Conf[GetAddressIndex(pvUartHnd)]->pvReciveBuffer = pvBuff;
+    Conf[GetAddressIndex(pvUartHnd)]->ReciveBufferindex = 0;
+    Conf[GetAddressIndex(pvUartHnd)]->pfnReciveBufferCallback = pfnCallback;
+    Conf[GetAddressIndex(pvUartHnd)]->u16ReciveBufferLength = u16Length;
 }
+
 ISR(USART_TX_vect)
 {
-      if(SendBufferindex == u16SendBufferLength)
-      { 
-        if(pfnSendBufferCallback != NULL)
+    if (Conf[0]->SendBufferindex == Conf[0]->u16SendBufferLength)
+    {
+        if (Conf[0]->pfnSendBufferCallback != NULL)
         {
-           (*pfnSendBufferCallback)(pvSendBuffer,u16SendBufferLength);
+
+            (Conf[0]->pfnSendBufferCallback)(Conf[0]->pvSendBuffer, Conf[0]->u16SendBufferLength);
         }
-      }
-      else
-      {
-       TR_UART0->u8Udr = ((uint8*)pvSendBuffer)[SendBufferindex++];
-      }
+    }
+    else
+    {
+        TR_UART0->u8Udr = ((uint8 *)Conf[0]->pvSendBuffer)[Conf[0]->SendBufferindex++];
+    }
 }
 
 ISR(USART_RX_vect)
 {
-        ((uint8*) pvReciveBuffer)[ReciveBufferindex++] = TR_UART0->u8Udr; 
-        if(((uint8*) pvReciveBuffer)[ReciveBufferindex-1]  == '/')
-        { 
-            ((uint8*) pvReciveBuffer)[ReciveBufferindex]='\0';   
-            CorrectData =true;
-            ReciveBufferindex = 0;
-            if(pfnReciveBufferCallback != NULL)
-                {
-                 (*pfnReciveBufferCallback)(pvReciveBuffer,u16ReciveBufferLength);
-                }
+    ((uint8 *)Conf[0]->pvReciveBuffer)[Conf[0]->ReciveBufferindex++] = TR_UART0->u8Udr;
+    if (Conf[0]->ReciveBufferindex == Conf[0]->u16ReciveBufferLength)
+    {
+        Conf[0]->ReciveBufferindex = 0;
+        if (Conf[0]->pfnReciveBufferCallback != NULL)
+        {
+            (Conf[0]->pfnReciveBufferCallback)(Conf[0]->pvReciveBuffer, Conf[0]->u16ReciveBufferLength);
         }
-      
+    }
 }
-
-
 
 /******************************************************************************/

@@ -41,7 +41,7 @@ extern "C"
     #include "StdTypes.h"
     #include <avr/interrupt.h>
     #include <stdbool.h>
-
+    
     /******************************************************************************/
 
     /******************************************************************************/
@@ -103,6 +103,13 @@ extern "C"
         UART_INTERRUPT_EMPTY_REG = (1 << 5)
 
     } Uart_tenmInterruptType;
+
+    typedef enum
+    {
+       UART1 = 0,
+       UART2 = 1
+
+    } Uart_Number;
     /******************************************************************************/
 
     /******************************************************************************/
@@ -112,6 +119,7 @@ extern "C"
 
     typedef struct
     {
+        uint8 u8UartIdx;
         uint32 u32SystemClock;
         uint32 u32BaudRate;
         Uart_tenmCharSize enmCharSize;
@@ -119,8 +127,9 @@ extern "C"
         Uart_tenmStopBits enmStopBits;
         uint8 u8Direction;
         uint8 u8InterruptType;
-
+        
     } Uart_tstInitConfig;
+
 
     /******************************************************************************/
     /* PUBLIC CONSTANT DECLARATIONS */
@@ -136,14 +145,13 @@ extern "C"
     /* PUBLIC FUNCTION PROTOTYPES */
     /******************************************************************************/
 
-    void Uart_vInit(Uart_tstInitConfig *stUartInit);
-    void Uart_vTransmitBuff(void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16));
-    void Uart_vReceiveBuff(void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16));
-    void Uart_vTransmitBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
-    void Uart_vReceiveBuffTimeout(void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
-    void Uart_vTransmitBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
-    void Uart_vReceiveBuffInterrupt(void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
-    bool Uart_readRecivedFlag(void);
+    void* Uart_pvInit(Uart_tstInitConfig* UartInit);
+    void Uart_vTransmitBuff(void* pvUartHnd,void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16));
+    void Uart_vReceiveBuff(void* pvUartHnd,void *pvBuff, uint16 u16Length, void (*pfnCallback)(void *, uint16));
+    void Uart_vTransmitBuffTimeout(void* pvUartHnd,void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
+    void Uart_vReceiveBuffTimeout(void* pvUartHnd,void* pvBuff, uint16 u16Length, uint16 u16Timeout, void (*pfnCallback)(void*, uint16));
+    void Uart_vTransmitBuffInterrupt(void* pvUartHnd,void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
+    void Uart_vReceiveBuffInterrupt(void* pvUartHnd,void* pvBuff, uint16 u16Length, void (*pfnCallback)(void*, uint16));
 /******************************************************************************/
 
 /******************************************************************************/
