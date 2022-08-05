@@ -97,9 +97,9 @@ extern "C"
 
     typedef enum
     {
-        UART_INTERRUPT_NONE = 0,
-        UART_INTERRUPT_TX = (1 << 6),
-        UART_INTERRUPT_RX = (1 << 7),
+        UART_INTERRUPT_NONE      = 0,
+        UART_INTERRUPT_TX        = (1 << 6),
+        UART_INTERRUPT_RX        = (1 << 7),
         UART_INTERRUPT_EMPTY_REG = (1 << 5)
 
     } Uart_tenmInterruptType;
@@ -109,7 +109,7 @@ extern "C"
        UART1 = 0,
        UART2 = 1
 
-    } Uart_Number;
+    } Uart_tenmUartID;
     /******************************************************************************/
 
     /******************************************************************************/

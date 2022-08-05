@@ -286,15 +286,18 @@ static void vCheckEnd(void* au8pvBuffer, uint16 u16Length)
 
 void Terminal_vInit(void)
 {
-    Uart_tstInitConfig stConfigrations;
-    stConfigrations.u8UartIdx       = 0;
-    stConfigrations.enmCharSize     = UART_SIZE_8;
-    stConfigrations.enmParityType   = UART_PARITY_NONE;
-    stConfigrations.u32BaudRate     = 9600;
-    stConfigrations.u32SystemClock  = 16000000.0;
-    stConfigrations.u8Direction     = UART_DIR_TX | UART_DIR_RX ;
-    stConfigrations.u8InterruptType = UART_INTERRUPT_RX;
-    stConfigrations.enmStopBits     = UART_STOP_1;
+    Uart_tstInitConfig stConfigrations = {
+    .u8UartIdx       = UART1,
+    .enmCharSize     = UART_SIZE_8,
+    .enmParityType   = UART_PARITY_NONE,
+    .u32BaudRate     = 9600,
+    .u32SystemClock  = 16000000.0,
+    .u8Direction     = UART_DIR_TX | UART_DIR_RX ,
+    .u8InterruptType = UART_INTERRUPT_RX | UART_INTERRUPT_TX,
+    .enmStopBits     = UART_STOP_1
+
+    };
+
 
     pvUart = Uart_pvInit(&stConfigrations);
 
@@ -319,8 +322,9 @@ void Terminal_vMain(void)
             stCalculator.pu16Numbers = au16Numbers;
             uint16 n = s16Calculate(0, 0, 0, &stCalculator);
             vConvResultToCharArr(n, au8Result);
-            Uart_vTransmitBuff(pvUart, au8Result, u16GetLength(au8Result), NULL);
-            Uart_vTransmitBuff(pvUart,(void *)"\n", 1, NULL);
+            Uart_vTransmitBuffInterrupt(pvUart, au8Result, u16GetLength(au8Result), NULL);
+            _delay_ms(10);
+            Uart_vTransmitBuffInterrupt(pvUart,(void *)"\n", 1, NULL);
         }
         else if (bIsEqual("LED", au8Command))
         {
@@ -372,7 +376,7 @@ void Terminal_vMain(void)
                 Gpio_vDigitalWrite(GPIO_B, GREEN_LED_PIN, GPIO_LEVEL_LOW);
                 Gpio_vDigitalWrite(GPIO_B, BLUE_LED_PIN, GPIO_LEVEL_LOW);
             }
-            Uart_vTransmitBuff(pvUart,(void *)"ACK\n", 4, NULL);
+            Uart_vTransmitBuffInterrupt(pvUart,(void *)"ACK\n", 4, NULL);
         }
         else
         {
