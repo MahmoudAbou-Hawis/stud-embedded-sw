@@ -318,7 +318,7 @@ ISR(USART_TX_vect)
 
 ISR(USART_RX_vect)
 {
-    ((uint8 *)astHandles[0].pvReciveBuffer)[astHandles[0].ReciveBufferindex++] = astHandles[0].pstUartMemRegs->u8Udr;
+    ((uint8*)astHandles[0].pvReciveBuffer)[astHandles[0].ReciveBufferindex++] = astHandles[0].pstUartMemRegs->u8Udr;
     if (astHandles[0].ReciveBufferindex == astHandles[0].u16ReciveBufferLength)
     {
         astHandles[0].ReciveBufferindex = 0;
