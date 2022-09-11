@@ -65,15 +65,15 @@ typedef enum
 {
     /** @brief AREF, internal V REF turned off
      */
-    ARED = 0,
+    ADC_ARED = 0,
 
     /** @brief AV CC with external capacitor at AREF pin
      */
-    Avcc = 1,
+    ADC_Avcc = 1,
 
     /** @brief Internal 1.1V voltage reference with external capacitor at AREF pin
      */
-    INTERNAL_1V = 3
+    ADC_INTERNAL_1V = 3
 
 
 } ADC_tenmVoltageReference;
@@ -130,11 +130,11 @@ typedef enum
 {
     /** @brief Disable ADC interrupt
      */
-    INTERRUPT_NONE = 0,
+    ADC_INTERRUPT_NONE = 0,
 
     /** @brief Enable ADC interrupt
      */
-	INTERRUPT_EN
+	ADC_INTERRUPT_EN
 
 } ADC_tenmInterruptType;
 /*----------------------------------------------------------------------------*/
@@ -148,31 +148,31 @@ typedef enum
 {
     /** @brief Frequancy of rhe resultant conversion equal  8000 KHz
      */
-    Division_Factor_2   = 1,
+    ADC_Division_Factor_2   = 1,
 
     /** @brief Frequancy of rhe resultant conversion equal  4000 KHz
      */
-    Division_Factor_4   = 2, 
+    ADC_Division_Factor_4   = 2, 
 
     /** @brief Frequancy of rhe resultant conversion equal  2000 KHz
      */
-    Division_Factor_8   = 3,
+    ADC_Division_Factor_8   = 3,
 
     /** @brief Frequancy of rhe resultant conversion equal  1000 KHz
      */
-    Division_Factor_16  = 4,
+    ADC_Division_Factor_16  = 4,
 
     /** @brief Frequancy of rhe resultant conversion equal  500 KHz
      */
-    Division_Factor_32  = 5,
+    ADC_Division_Factor_32  = 5,
 
     /** @brief Frequancy of rhe resultant conversion equal  250 KHz
      */
-    Division_Factor_64  = 6,
+    ADC_Division_Factor_64  = 6,
 
     /** @brief Frequancy of rhe resultant conversion equal  125 KHz
      */
-    Division_Factor_128 = 7
+    ADC_Division_Factor_128 = 7
 
 } ADC_PrescalerSelections;
 

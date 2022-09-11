@@ -48,7 +48,7 @@ extern "C"
 #define CFG_APP_TEST_ADC             1
 
 
-#define CURRENT_APP                  CFG_APP_MAIN 
+#define CURRENT_APP                  CFG_APP_TEST_ADC 
 
 /******************************************************************************/
 

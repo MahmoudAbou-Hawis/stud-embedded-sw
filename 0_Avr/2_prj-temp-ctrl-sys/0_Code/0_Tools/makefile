@@ -28,7 +28,8 @@ OBJECTS.o = main.o \
 GPIO.o \
 Uart.o \
 Terminal.o \
-ADC.o
+ADC.o \
+TestADC.o
 OBJECTS.elf = FW.elf
 OBJECTS.hex = FW.hex
 
