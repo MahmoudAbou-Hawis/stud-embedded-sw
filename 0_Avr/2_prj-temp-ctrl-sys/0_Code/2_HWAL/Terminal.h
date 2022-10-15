@@ -42,6 +42,7 @@ extern "C"
 #include <stdbool.h>
 #include "Uart.h"
 #include "GPIO.h"
+#include "ADC.h"
 #include <util/delay.h>
 /******************************************************************************/
 

@@ -11,9 +11,9 @@
 #define PORTC_BASE ((uint8)0x26)
 #define PORTD_BASE ((uint8)0x29)
 
-#define GPIO_B ((Gpio_tstPort*)PORTB_BASE)
-#define GPIO_C ((Gpio_tstPort*)PORTC_BASE)
-#define GPIO_D ((Gpio_tstPort*)PORTD_BASE)
+#define GPIO_B ((Gpio_tstPort *)PORTB_BASE)
+#define GPIO_C ((Gpio_tstPort *)PORTC_BASE)
+#define GPIO_D ((Gpio_tstPort *)PORTD_BASE)
 
 typedef enum
 {

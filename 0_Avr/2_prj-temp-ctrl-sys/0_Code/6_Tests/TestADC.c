@@ -26,7 +26,7 @@ int main()
     {
       .enmInterruptType       = INTERRUPT_EN ,
       .enmVoltageReference    = Avcc ,
-      .enmPrescalerSelections = Division_Factor_128  
+      .enmPrescalerSelections = Division_Factor_128 
     };
     Uart_tstInitConfig stConfigrations = {
     .u8UartIdx       = UART1,
@@ -53,8 +53,5 @@ int main()
 
     return 0;
 }
-
-
-
 
 #endif

@@ -11,7 +11,7 @@
  *
  * @par Description
  * You Can get the digital value of analog signal by using this driver
- * 
+ *
  * @par Author
  * Mahmoud Abou-Hawis
  *
@@ -37,7 +37,7 @@
  *
  */
 /*----------------------------------------------------------------------------*/
-#define ADC_BASE   (0x78)
+#define ADC_BASE (0x78)
 
 /*----------------------------------------------------------------------------*/
 /** @brief define the ADC handler
@@ -45,37 +45,42 @@
  *  You can access all ADC registers from this handler
  */
 /*----------------------------------------------------------------------------*/
-#define ADC_HND      ((tstADCRegistrs *)ADC_BASE)
+#define ADC_HND ((tstADCRegistrs *)ADC_BASE)
 /**
  * @brief refer to Channal Handle
- * 
+ *
  */
-#define Channal_HND  ((tstChannalHandle *)pvChannalHandle)
+#define Channal_HND ((tstChannalHandle *)pvChannalHandle)
 /**
  * @brief it is the 6th bit in u8Admux Register
- * 
+ *
  */
 #define REFS0 6
 /**
- * @brief it is the 6th bit in u8Adcsra Register 
- * 
+ * @brief it is the 6th bit in u8Adcsra Register
+ *
  */
-#define ADSC  6
+#define ADSC 6
 /**
- * @brief it is the 7th bit in u8Adcsra Register 
- * 
+ * @brief it is the 7th bit in u8Adcsra Register
+ *
  */
-#define ADEN  7
+#define ADEN 7
 /**
- * @brief it is the 3th bit in u8Adcsra Register 
- * 
+ * @brief it is the 3th bit in u8Adcsra Register
+ *
  */
-#define ADIE  3
-
-
+#define ADIE 3
+/**
+ * @brief it is the 5th bit in u8Adcsra Register
+ *
+ */
 #define ADLAR 5
-
-#define ADIF  4 
+/**
+ * @brief it is the 4th bit in u8Adcsra Register
+ *
+ */
+#define ADIF 4
 /******************************************************************************/
 
 /******************************************************************************/
@@ -102,7 +107,7 @@
 typedef struct
 {
     /** @brief The identifier of the ADCL register in ADC
-     * 
+     *
      */
     volatile uint8 u8Adcl;
 
@@ -132,7 +137,7 @@ typedef struct
 /** @brief Represnt channal's ID
  */
 /*----------------------------------------------------------------------------*/
-typedef struct 
+typedef struct
 {
     /** @brief The identifier of the channal id
      *
@@ -152,46 +157,34 @@ typedef struct
 /******************************************************************************/
 /* PRIVATE VARIABLE DEFINITIONS */
 /******************************************************************************/
+/**
+ * @brief Additional void pointer args (optional)
+ *
+ */
+void *vpArgs = NULL;
 
 /**
  * @brief refer to all Channal handle's id
- * 
+ *
  */
-static tstChannalHandle astChannelHandles[8] = 
-{
+static tstChannalHandle astChannelHandles[8] =
     {
-        .id = 0
-    } ,
+        {.id = 0},
 
-    {
-        .id = 1
-    } ,
+        {.id = 1},
 
-    {
-        .id = 2
-    } ,
-    {
-        .id = 3
-    } ,
+        {.id = 2},
+        {.id = 3},
 
-    {
-        .id = 4
-    } ,
+        {.id = 4},
 
-    {
-        .id = 5
-    } ,
+        {.id = 5},
 
-    {
-        .id = 6
-    } ,
+        {.id = 6},
 
-    {
-        .id = 7
-    }
-};
+        {.id = 7}};
 
-void (*pfnCallbackInterrupt)(uint16) = NULL;
+void (*pfnCallbackInterrupt)(uint16, void *) = NULL;
 
 /******************************************************************************/
 
@@ -219,13 +212,13 @@ void (*pfnCallbackInterrupt)(uint16) = NULL;
 
 ISR(ADC_vect)
 {
-    uint16 u16Data = (ADC_HND->u8Adcl | (ADC_HND->u8Adch<<8));
+    uint16 u16Data = (ADC_HND->u8Adcl | (ADC_HND->u8Adch << 8));
 
     if (pfnCallbackInterrupt != NULL)
     {
-        (*pfnCallbackInterrupt)(u16Data);
+        (*pfnCallbackInterrupt)(u16Data, vpArgs);
     }
-    ADC_HND->u8Adcsra &= ~(1<<ADEN);
+    ADC_HND->u8Adcsra &= ~(1 << ADEN);
 }
 
 /******************************************************************************/
@@ -234,71 +227,73 @@ ISR(ADC_vect)
 /* PUBLIC FUNCTION DEFINITIONS */
 /******************************************************************************/
 
-
-void ADC_vInit(ADC_tstInitConfig* pstADCInit)
+void ADC_vInit(ADC_tstInitConfig *pstADCInit)
 {
-    ADC_HND->u8Admux  = (pstADCInit->enmVoltageReference << REFS0);
-    ADC_HND->u8Adcsra = (pstADCInit->enmPrescalerSelections)| 
-                      (pstADCInit->enmInterruptType<<ADIE);
+    ADC_HND->u8Admux = (pstADCInit->enmVoltageReference << REFS0);
+    ADC_HND->u8Adcsra = (pstADCInit->enmPrescalerSelections) |
+                        (pstADCInit->enmInterruptType << ADIE);
 }
 
-void* ADC_pvCreateChannel(ADC_tenmAnolagChannals enmChannal)
+void *ADC_pvCreateChannel(ADC_tenmAnolagChannals enmChannal)
 {
     return (void *)&astChannelHandles[enmChannal];
 }
 
-uint16 ADC_u16Read(void * pvChannalHandle, void (*pfnCallback)(uint16))
+uint16 ADC_u16Read(void *pvChannalHandle, void *vpArg, void (*pfnCallback)(uint16, void *))
 {
     if (pvChannalHandle == NULL)
     {
         return 0;
     }
-    ADC_HND->u8Admux  &= 0xF0;
-    ADC_HND->u8Admux  |= Channal_HND->id;
-    ADC_HND->u8Adcsra |= (1<<ADEN);
-    ADC_HND->u8Adcsra |= (1<<ADSC);
-    while(!(ADC_HND->u8Adcsra & (1<<ADIF)));
-    uint16 u16Data = (ADC_HND->u8Adcl | (ADC_HND->u8Adch<<8));
+    ADC_HND->u8Admux &= 0xF0;
+    ADC_HND->u8Admux |= Channal_HND->id;
+    ADC_HND->u8Adcsra |= (1 << ADEN);
+    ADC_HND->u8Adcsra |= (1 << ADSC);
+    while (!(ADC_HND->u8Adcsra & (1 << ADIF)))
+        ;
+    uint16 u16Data = (ADC_HND->u8Adcl | (ADC_HND->u8Adch << 8));
     if (pfnCallback != NULL)
     {
-        (*pfnCallback)(u16Data);
+        (*pfnCallback)(u16Data, vpArg);
     }
-    ADC_HND->u8Adcsra &= ~(1<<ADEN);
+    ADC_HND->u8Adcsra &= ~(1 << ADEN);
     return u16Data;
 }
 
-uint16 ADC_u16ReadTimeOut(void* pvChannalHandle, uint16 TimeOut, void (*pfnCallback)(uint16))
+uint16 ADC_u16ReadTimeOut(void *pvChannalHandle, uint16 TimeOut, void *vpArg, void (*pfnCallback)(uint16, void *))
 {
     if (pvChannalHandle == NULL)
     {
         return 0;
     }
-    ADC_HND->u8Admux  &= 0xF0;
-    ADC_HND->u8Admux  |= Channal_HND->id;
-    ADC_HND->u8Adcsra |= (1<<ADEN);
-    ADC_HND->u8Adcsra |= (1<<ADSC);
+    ADC_HND->u8Admux &= 0xF0;
+    ADC_HND->u8Admux |= Channal_HND->id;
+    ADC_HND->u8Adcsra |= (1 << ADEN);
+    ADC_HND->u8Adcsra |= (1 << ADSC);
     uint16 u16Counter = 0;
-    while(!(ADC_HND->u8Adcsra & (1<<ADIF)) && u16Counter++ < TimeOut);
-    uint16 u16Data = (ADC_HND->u8Adcl | (ADC_HND->u8Adch<<8));
+    while (!(ADC_HND->u8Adcsra & (1 << ADIF)) && u16Counter++ < TimeOut)
+        ;
+    uint16 u16Data = (ADC_HND->u8Adcl | (ADC_HND->u8Adch << 8));
     if (pfnCallback != NULL)
     {
-        (*pfnCallback)(u16Data);
+        (*pfnCallback)(u16Data, vpArg);
     }
-    ADC_HND->u8Adcsra &= ~(1<<ADEN);
+    ADC_HND->u8Adcsra &= ~(1 << ADEN);
     return u16Data;
 }
 
-uint16 ADC_u16ReadInterrupt(void* pvChannalHandle, void (*pfnCallback)(uint16))
+uint16 ADC_u16ReadInterrupt(void *pvChannalHandle, void *vpArg, void (*pfnCallback)(uint16, void *))
 {
     if (pvChannalHandle == NULL)
     {
         return 0;
     }
     pfnCallbackInterrupt = pfnCallback;
-    ADC_HND->u8Admux  &= 0xF0;
-    ADC_HND->u8Admux  |= Channal_HND->id;
-    ADC_HND->u8Adcsra |= (1<<ADEN);
-    ADC_HND->u8Adcsra |= (1<<ADSC);
+    vpArgs = vpArg;
+    ADC_HND->u8Admux &= 0xF0;
+    ADC_HND->u8Admux |= Channal_HND->id;
+    ADC_HND->u8Adcsra |= (1 << ADEN);
+    ADC_HND->u8Adcsra |= (1 << ADSC);
 }
 
 /******************************************************************************/

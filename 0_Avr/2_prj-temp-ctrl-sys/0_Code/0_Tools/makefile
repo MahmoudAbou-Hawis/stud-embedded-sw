@@ -29,7 +29,12 @@ GPIO.o \
 Uart.o \
 Terminal.o \
 ADC.o \
-TestADC.o
+TestADC.o \
+I2C.o \
+I2CTEST.o \
+Timer0.o \
+TestTimer1.o
+
 OBJECTS.elf = FW.elf
 OBJECTS.hex = FW.hex
 

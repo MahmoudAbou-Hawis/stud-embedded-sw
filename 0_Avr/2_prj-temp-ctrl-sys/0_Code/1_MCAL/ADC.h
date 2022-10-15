@@ -276,7 +276,10 @@ void* ADC_pvCreateChannel(ADC_tenmAnolagChannals enmChannal);
  * @note This function runs in the polling mode only
  */
 /*----------------------------------------------------------------------------*/
-uint16 ADC_u16Read(void* pvChannalHandle, void (*pfnCallback)(uint16));
+uint16 ADC_u16Read(void* pvChannalHandle,void* vpArg ,void (*pfnCallback)(uint16 ,void*));
+
+
+
 
 /*----------------------------------------------------------------------------*/
 /** @brief 
@@ -295,7 +298,8 @@ uint16 ADC_u16Read(void* pvChannalHandle, void (*pfnCallback)(uint16));
  * @note This function runs in the TimeOut mode only
  */
 /*----------------------------------------------------------------------------*/
-uint16 ADC_u16ReadTimeOut(void* pvChannalHandle, uint16 TimeOut, void (*pfnCallback)(uint16));
+uint16 ADC_u16ReadTimeOut(void* pvChannalHandle, uint16 TimeOut,void* vpArg ,void (*pfnCallback)(uint16,void*));
+
 
 /*----------------------------------------------------------------------------*/
 /** @brief 
@@ -304,12 +308,14 @@ uint16 ADC_u16ReadTimeOut(void* pvChannalHandle, uint16 TimeOut, void (*pfnCallb
  * @param[in] pfnCallback       Pointer to CallBack function to be called after
  *                              conversion
  * 
- * @return The value of analog signal after conversion it must be from 0 to 1023
+ * @return 0 if you don't pass call back func. so that you must pass call back 
+ *         function to get ADC result  
+ * 
  * 
  * @note This function runs in the Interrupt mode Enabled
  */
 /*----------------------------------------------------------------------------*/
-uint16 ADC_u16ReadInterrupt(void* pvChannalHandle, void (*pfnCallback)(uint16));
+uint16 ADC_u16ReadInterrupt(void* pvChannalHandle, void* vpArg,void (*pfnCallback)(uint16,void*));
 /******************************************************************************/
 
 /******************************************************************************/

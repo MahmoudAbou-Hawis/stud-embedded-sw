@@ -1,4 +1,4 @@
-/******************************************************************************/
+
 /**
  * @file Termianl.c
  * @brief The source file of the implemation of a simple termianl
@@ -30,10 +30,11 @@
 /* PRIVATE DEFINES */
 /******************************************************************************/
 
-#define RED_LED_PIN         0
-#define BLUE_LED_PIN        1
-#define GREEN_LED_PIN       2 
-
+#define RED_LED_PIN         7   
+#define BLUE_LED_PIN        5
+#define GREEN_LED_PIN       6 
+#define TEMPSYS_HEATER      0
+#define TEMPSYS_COOLER      1
 /******************************************************************************/
 
 /******************************************************************************/
@@ -49,9 +50,9 @@
 typedef enum
 {
     LEDS_OFF     = 0,
-    LED_RED_ON   = 1,
-    LED_BLUE_ON  = 2,
-    LED_GREEN_ON = 4
+    LED_RED_ON   = 7,
+    LED_BLUE_ON  = 5,
+    LED_GREEN_ON = 6
 
 } tenmLedsStatus;
 
@@ -93,7 +94,8 @@ static uint8 au8Result[30];
 static uint8 au8Serial[30];
 static bool bIsOperandNotProcessed = 0;
 static void* pvUart;
-
+static void* channal;
+static uint16 Temp;
 /******************************************************************************/
 
 /******************************************************************************/
@@ -126,6 +128,7 @@ static void vCheckEnd(void* au8pvBuffer, uint16 u16Length);
 /******************************************************************************/
 /* PRIVATE FUNCTION DEFINITIONS */
 /******************************************************************************/
+
 
 static sint16 s16Calculate(uint16 u16LastNumber, uint16 u16SignIndex, uint16 u16Index, tstCalculator *pstCal)
 {
@@ -289,10 +292,33 @@ static void vCheckEnd(void* au8pvBuffer, uint16 u16Length)
 
 static void vLightLeds(int Bitwise)
 {
-        for(int Bit = 0 ;Bit < 3 ;Bit++)
+        for(int Bit = 5 ;Bit < 8 ;Bit++)
         {
-            Gpio_vDigitalWrite(GPIO_B,Bit,((Bitwise&(1<<Bit)))?GPIO_LEVEL_HIGH:GPIO_LEVEL_LOW);
+            Gpio_vDigitalWrite(GPIO_D,Bit,((Bitwise&(1<<Bit)))?GPIO_LEVEL_HIGH:GPIO_LEVEL_LOW);
         }
+}
+
+static void printTemp(void)
+{
+    static char as16Out[6] = {0};
+    sprintf(as16Out, "%05u\n", Temp);
+    as16Out[5] = '\n';
+    Uart_vTransmitBuffInterrupt(pvUart,as16Out, 6, NULL);
+}
+
+static void vAdc0CallBack(uint16 u16AdcRaw , void* vpArg)
+{
+    Temp = (u16AdcRaw*275)/560;
+    if(Temp < 60)
+    {
+        Gpio_vDigitalWrite(GPIO_B,TEMPSYS_HEATER,GPIO_LEVEL_HIGH);
+        Gpio_vDigitalWrite(GPIO_B,TEMPSYS_COOLER,GPIO_LEVEL_LOW);
+    }
+    else
+    {
+        Gpio_vDigitalWrite(GPIO_B,TEMPSYS_HEATER,GPIO_LEVEL_LOW);
+        Gpio_vDigitalWrite(GPIO_B,TEMPSYS_COOLER,GPIO_LEVEL_HIGH);
+    }
 }
 
 /******************************************************************************/
@@ -315,21 +341,31 @@ void Terminal_vInit(void)
 
     };
 
+    ADC_tstInitConfig ADCConf =
+    {
+      .enmInterruptType       = ADC_INTERRUPT_EN ,
+      .enmVoltageReference    = ADC_Avcc ,
+      .enmPrescalerSelections = ADC_Division_Factor_128 
+    };
 
     pvUart = Uart_pvInit(&stConfigrations);
-
+    ADC_vInit(&ADCConf);
+    channal = ADC_pvCreateChannel(ADC0);
     /*Global Interrupt Enable*/
     sei();
-   
+    
+    Gpio_vPinMode(GPIO_D,RED_LED_PIN,GPIO_OUTPUT);
+    Gpio_vPinMode(GPIO_D,GREEN_LED_PIN,GPIO_OUTPUT);
+    Gpio_vPinMode(GPIO_D,BLUE_LED_PIN,GPIO_OUTPUT);
+    Gpio_vPinMode(GPIO_B,TEMPSYS_HEATER,GPIO_OUTPUT);
+    Gpio_vPinMode(GPIO_B,TEMPSYS_COOLER,GPIO_OUTPUT);
 
-    Gpio_vPinMode(GPIO_B,RED_LED_PIN,GPIO_LEVEL_HIGH);
-    Gpio_vPinMode(GPIO_B,GREEN_LED_PIN,GPIO_LEVEL_HIGH);
-    Gpio_vPinMode(GPIO_B,BLUE_LED_PIN,GPIO_LEVEL_HIGH);
     Uart_vReceiveBuffInterrupt(pvUart,au8Buffer,1,vCheckEnd);
 }
 
 void Terminal_vMain(void)
 {
+    ADC_u16ReadInterrupt(channal,NULL,vAdc0CallBack);
     if (bIsOperandNotProcessed)
     {
         if (bIsEqual("Cal", au8Command))
@@ -347,17 +383,23 @@ void Terminal_vMain(void)
         {
             if (bIsEqual("RED", au8Procss))
             {
-                vLightLeds(LED_RED_ON);
+                Gpio_vDigitalWrite(GPIO_D,LED_RED_ON,GPIO_LEVEL_HIGH);
+                Gpio_vDigitalWrite(GPIO_D,LED_GREEN_ON,GPIO_LEVEL_LOW);
+                Gpio_vDigitalWrite(GPIO_D,LED_BLUE_ON,GPIO_LEVEL_LOW);
             }
             else if (bIsEqual("GREEN", au8Procss))
             {
-                vLightLeds(LED_GREEN_ON);
+                Gpio_vDigitalWrite(GPIO_D,LED_GREEN_ON,GPIO_LEVEL_HIGH);
+                Gpio_vDigitalWrite(GPIO_D,LED_RED_ON,GPIO_LEVEL_LOW);
+                Gpio_vDigitalWrite(GPIO_D,LED_BLUE_ON,GPIO_LEVEL_LOW);
             }
             else if (bIsEqual("BLUE", au8Procss))
             {
-                vLightLeds(LED_BLUE_ON);
+                Gpio_vDigitalWrite(GPIO_D,LED_BLUE_ON,GPIO_LEVEL_HIGH);
+                Gpio_vDigitalWrite(GPIO_D,LED_RED_ON,GPIO_LEVEL_LOW);
+                Gpio_vDigitalWrite(GPIO_D,LED_GREEN_ON,GPIO_LEVEL_LOW);
             }
-            else if (bIsEqual("TURQUOSE", au8Procss))
+           /* else if (bIsEqual("TURQUOSE", au8Procss))
             {
                 vLightLeds((LED_BLUE_ON|LED_GREEN_ON));
             }
@@ -373,9 +415,12 @@ void Terminal_vMain(void)
             {
                 vLightLeds((LED_RED_ON|LED_BLUE_ON|LED_GREEN_ON));
             }
+            */
             else if (bIsEqual("OFF", au8Procss))
             {
-                vLightLeds(LEDS_OFF);
+                Gpio_vDigitalWrite(GPIO_D,LED_RED_ON,GPIO_LEVEL_LOW);
+                Gpio_vDigitalWrite(GPIO_D,LED_GREEN_ON,GPIO_LEVEL_LOW);
+                Gpio_vDigitalWrite(GPIO_D,LED_BLUE_ON,GPIO_LEVEL_LOW);
             }
             Uart_vTransmitBuffInterrupt(pvUart,(void *)"ACK\n", 4, NULL);
         }
@@ -392,7 +437,15 @@ void Terminal_vMain(void)
             }
             else
             {
-                Uart_vTransmitBuff(pvUart,au8Serial, u16GetLength(au8Serial), NULL);
+                if(bIsEqual("SERIAL" ,au8Procss))
+                {
+                   Uart_vTransmitBuff(pvUart,au8Serial, u16GetLength(au8Serial), NULL);
+                }
+                else
+                {
+                    printTemp();
+                }
+                
             }
         }
         bIsOperandNotProcessed = false;
