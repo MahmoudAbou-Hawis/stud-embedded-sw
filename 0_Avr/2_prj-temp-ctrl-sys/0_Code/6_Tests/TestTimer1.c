@@ -4,7 +4,7 @@
 
 //#include "Terminal.h"
 #include "GPIO.h"
-#include "Timer0.h"
+#include "Timer1.h"
 #include "ADC.h"
 #include <stdio.h>
 #include <util/delay.h>
@@ -20,17 +20,17 @@ int main()
 {
     Gpio_vPinMode(GPIO_B,1,GPIO_OUTPUT);
     boolean flag = TRUE;
-    Timer0_tstConfig config =
+    Timer1_tstConfig config =
     {
-        .enmInterrupt = TIMER0_INTERRUPT_ON,
-        .enmMode      = TIMER0_CTC,
-        .u16prescaler = TIMER0_PRESCALER_1024
+        .enmInterrupt = TIMER1_INTERRUPT_ON,
+        .enmMode      = TIMER1_CTC,
+        .u16prescaler = TIMER1_PRESCALER_1024
     };
     sei();
-    Timer0_vInit(&config);
-    Timer0_vSetPayload(15625);
-    Timer0_vSetCallbackFunc(CallBack,&flag);
-    Timer0_vEnable();
+    Timer1_vInit(&config);
+    Timer1_vSetPayload(15625);
+    Timer1_vSetCallbackFunc(CallBack,&flag);
+    Timer1_vEnable();
 
     while (TRUE)
     {

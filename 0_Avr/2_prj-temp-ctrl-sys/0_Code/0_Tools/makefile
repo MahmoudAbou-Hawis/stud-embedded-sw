@@ -32,7 +32,7 @@ ADC.o \
 TestADC.o \
 I2C.o \
 I2CTEST.o \
-Timer0.o \
+Timer1.o \
 TestTimer1.o
 
 OBJECTS.elf = FW.elf
