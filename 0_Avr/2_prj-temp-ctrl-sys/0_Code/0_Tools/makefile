@@ -33,7 +33,10 @@ TestADC.o \
 I2C.o \
 I2CTEST.o \
 Timer1.o \
-TestTimer1.o
+TestTimer1.o \
+SwTimer.o \
+SWTimerTEST.o \
+TestSwTimer2.o
 
 OBJECTS.elf = FW.elf
 OBJECTS.hex = FW.hex

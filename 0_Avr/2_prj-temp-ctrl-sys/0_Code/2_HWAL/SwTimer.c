@@ -1,19 +1,19 @@
 /******************************************************************************/
 /**
- * @file Timer0.h
- * @brief Atmega32P Timer0 implemention in C language
+ * @file <file-name>.c
+ * @brief <file-short-description>
  *
  * @par Project Name
- *  Timer0 driver
+ * <project-name>
  *
  * @par Code Language
  * C
  *
  * @par Description
- * this driver makes for control Counter0 in AtMega32p
+ * <file-long-description>
  * 
  * @par Author
- * Mahmoud Abou-Hawis
+ * <author-name>
  *
  */
 /******************************************************************************/
@@ -21,21 +21,15 @@
 /******************************************************************************/
 /* INCLUDES */
 /******************************************************************************/
-#include "Timer1.h"
-#include "string.h"
-#include "Uart.h"
-#include <util/delay.h>
+
+#include "SwTimer.h"
+
 /******************************************************************************/
 
 /******************************************************************************/
 /* PRIVATE DEFINES */
 /******************************************************************************/
 
-/**
- * @brief refer to the base of Timer 1
-
-*/
-#define TIMER1_BASE ((tstTimer1Reg*)0x6F)
 /******************************************************************************/
 
 /******************************************************************************/
@@ -53,43 +47,20 @@
 /******************************************************************************/
 /* PRIVATE TYPES */
 /******************************************************************************/
-/**
- * @brief refer to Timer registers
-*/
+
 typedef struct 
 {
-    uint8 u8TIMSK1;
-    uint8 u8Reseved1[16];
-    uint8 u8TCCR1A;
-    uint8 u8TCCR1B;
-    uint8 u8TCCR1C;
-    uint8 u8Reseved2;
-    uint16 u16TCNT;
-    uint16 u16ICR1;
-    uint16 u16OCR1A;
-    uint16 u16OCR1B;
+    void (*pfnCallBack)(void*);
+    uint8 u8Counter;
+    uint8 u8Periodicity;
+    void * pvArgs;
+    boolean bIsBusy;
+    boolean bIsWorking;
+} Tasks;
 
-} tstTimer1Reg;
+Tasks astTasksArr[SW_TIMER_CFG_TASKS_NUM] = {0};
+uint8 u8CounterActiveTasks = 0;
 
-/**
- * @brief refer to Timer periphral requirements inputs
-*/
-typedef struct 
-{
-    tstTimer1Reg* pstTimer1Regs;
-    uint16 u16prscaler;
-    void (*pfnCallback0)(void*);
-    void* pvArgs0;
-
-} tstTimer1Hnd;
-
-static tstTimer1Hnd stTimer0Hnd =
-{
-    .pstTimer1Regs = TIMER1_BASE,
-    .u16prscaler = 0,
-    .pvArgs0 = NULL,
-    .pfnCallback0 = NULL
-};
 /******************************************************************************/
 
 /******************************************************************************/
@@ -126,66 +97,115 @@ static tstTimer1Hnd stTimer0Hnd =
 /* PRIVATE FUNCTION DEFINITIONS */
 /******************************************************************************/
 
+void vCallback(void* Args)
+{
+    for(uint8 i = 0; i < SW_TIMER_CFG_TASKS_NUM; i++)
+    {
+        ++(astTasksArr[i].u8Counter);
+        if(astTasksArr[i].bIsBusy && 
+           (astTasksArr[i].u8Counter == astTasksArr[i].u8Periodicity) && 
+           (astTasksArr[i].bIsWorking))
+        {
+            if(astTasksArr[i].pfnCallBack != NULL)
+            {
+                (astTasksArr[i].pfnCallBack)(astTasksArr[i].pvArgs);
+                astTasksArr[i].u8Counter = 0;
+            }
+        }
+    }
+}
+
 /******************************************************************************/
 
 /******************************************************************************/
 /* PUBLIC FUNCTION DEFINITIONS */
 /******************************************************************************/
 
-void Timer1_vInit(Timer1_tstConfig* pstConfig)
+void  SwTimer_vInit(uint16 u16Payload ,SW_Timer_enmPrescaler prescaler)
 {
-    if(pstConfig->enmMode == TIMER1_NORTMAL)
+    Timer1_tstConfig config =
     {
-        stTimer0Hnd.pstTimer1Regs->u8TCCR1A = 0;
-        stTimer0Hnd.pstTimer1Regs->u8TCCR1B = 0;
+        .enmInterrupt = TIMER1_INTERRUPT_ON,
+        .enmMode      = TIMER1_CTC,
+        .u16prescaler = prescaler
+    };
+    Timer1_vInit(&config);
+    Timer1_vSetPayload(u16Payload);
+    Timer1_vSetCallbackFunc(vCallback,NULL);
+}
+
+SwTimer_tenmRetStatus SwTimer_enmMakeTimer(void** ppvHnd , uint16 u16Periodicity,void (*pfnCallbcak)(void*) ,void* pvArgs)
+{
+    
+    for(uint8 i = 0; i < SW_TIMER_CFG_TASKS_NUM; i++)
+    {
+        if(!astTasksArr[i].bIsBusy)
+        {
+            astTasksArr[i].pfnCallBack = pfnCallbcak;
+            astTasksArr[i].u8Periodicity = u16Periodicity;
+            astTasksArr[i].u8Counter = 0;
+            astTasksArr[i].pvArgs = pvArgs;
+            astTasksArr[i].bIsBusy = TRUE;
+            astTasksArr[i].bIsWorking = FALSE;
+
+            
+            (*ppvHnd) = (void*)&astTasksArr[i];
+
+            return SW_TIMER_RET_STAT_OK;
+        }
     }
-    else if(pstConfig->enmMode == TIMER1_FAST_PWM)
+
+    return SW_TIMER_RET_STAT_ERR_FULL;
+}
+
+SwTimer_tenmRetStatus SwTimer_enmDeleteTimer(void** ppvHnd)
+{
+    if ((*ppvHnd) != NULL)
     {
-        stTimer0Hnd.pstTimer1Regs->u8TCCR1A  = 3;
-        stTimer0Hnd.pstTimer1Regs->u8TCCR1B  = (1<<3);
+        ((Tasks*)(*ppvHnd))->bIsBusy = FALSE;
+        ((Tasks*)(*ppvHnd))->bIsWorking = FALSE;
+
+        if(u8CounterActiveTasks--)
+        {
+            Timer1_vDisable();
+        }
+
+        (*ppvHnd) = NULL;
+        return SW_TIMER_RET_STAT_OK;
+    }
+    return SW_TIMER_RET_STAT_ERR_NOT_FND;
+}
+
+SwTimer_tenmRetStatus SwTimer_enmStart(void * pvHnd)
+{
+    if (pvHnd !=NULL)
+    {
+        ((Tasks*)(pvHnd))->bIsWorking = TRUE;
+
+        if (++u8CounterActiveTasks)
+        {
+            Timer1_vEnable();
+            return SW_TIMER_RET_STAT_OK;
+        }
+    }
+    return SW_TIMER_RET_STAT_ERR_NOT_FND;
+}
+
+SwTimer_tenmRetStatus SwTimer_enmEnd(void * pvHnd)
+{
+    if (pvHnd != NULL)
+    {
+        ((Tasks*)(pvHnd))->bIsWorking = FALSE;
+
+        if(u8CounterActiveTasks--)
+        {
+            Timer1_vDisable();
+        }
+        return SW_TIMER_RET_STAT_OK;
     }
     else
     {
-        stTimer0Hnd.pstTimer1Regs->u8TCCR1A = 0;
-        stTimer0Hnd.pstTimer1Regs->u8TCCR1B = 0x08;
-    }
-
-    if(pstConfig->enmInterrupt == TIMER1_INTERRUPT_ON)
-    {
-        stTimer0Hnd.pstTimer1Regs->u8TIMSK1 = 2;
-    }
-    stTimer0Hnd.u16prscaler = pstConfig->u16prescaler;
-}
-
-
-void Timer1_vSetPayload(uint16 u16Payload)
-{
-
-    stTimer0Hnd.pstTimer1Regs->u16OCR1A = u16Payload;
-}
-
-void Timer1_vSetCallbackFunc(void (*pfnCallback)(void*), void* pvArgs)
-{
-    stTimer0Hnd.pfnCallback0 = pfnCallback;
-    stTimer0Hnd.pvArgs0 = pvArgs;
-}
-
-
-void Timer1_vEnable(void)
-{
-    stTimer0Hnd.pstTimer1Regs->u8TCCR1B |= stTimer0Hnd.u16prscaler; 
-}
-
-void Timer1_vDisable(void)
-{
-    stTimer0Hnd.pstTimer1Regs->u8TCCR1B &= 0xF8;
-}
-
-ISR(TIMER1_COMPA_vect)
-{
-    if((*(stTimer0Hnd.pfnCallback0))!= NULL)
-    {
-        (*(stTimer0Hnd.pfnCallback0))(stTimer0Hnd.pvArgs0);
+        return SW_TIMER_RET_STAT_ERR_NOT_FND;
     }
 }
 

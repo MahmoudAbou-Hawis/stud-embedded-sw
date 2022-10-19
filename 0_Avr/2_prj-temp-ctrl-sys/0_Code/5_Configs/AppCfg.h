@@ -48,8 +48,10 @@ extern "C"
 #define CFG_APP_TEST_ADC             1
 #define CFG_APP_I2C                  2
 #define CFG_APP_TIMER1               3
+#define CFG_APP_SWTIMER              4
+#define CFG_APP_SW_TIMER_2           5
 
-#define CURRENT_APP                  CFG_APP_TIMER1 
+#define CURRENT_APP                  CFG_APP_SW_TIMER_2 
 
 /******************************************************************************/
 

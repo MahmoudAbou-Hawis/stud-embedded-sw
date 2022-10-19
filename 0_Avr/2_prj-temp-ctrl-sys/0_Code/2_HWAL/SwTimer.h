@@ -38,6 +38,9 @@ extern "C"
 /* INCLUDES */
 /******************************************************************************/
 
+#include "StdTypes.h"
+#include "Timer1.h"
+#include "SwTimerCfg.h"
 /******************************************************************************/
 
 /******************************************************************************/
@@ -50,11 +53,57 @@ extern "C"
 /* PUBLIC MACROS */
 /******************************************************************************/
 
+
+
 /******************************************************************************/
 
 /******************************************************************************/
 /* PUBLIC ENUMS */
 /******************************************************************************/
+
+typedef enum
+{
+    SW_TIMER_RET_STAT_OK = 0,
+
+    SW_TIMER_RET_STAT_ERR_NOT_FND,
+
+    SW_TIMER_RET_STAT_ERR_FULL,
+
+
+
+} SwTimer_tenmRetStatus;
+
+typedef enum
+{
+    /**
+     * @brief it will make the prescaler 1024
+    */
+
+    SW_TIMER_PRESCALER_1024 = TIMER1_PRESCALER_1024,
+
+    /**
+     * @brief it will make the prescaler 256
+    */
+
+    SW_TIMER_PRESCALER_256 = TIMER1_PRESCALER_256,
+
+    /**
+     * @brief it will make the prescaler 64
+    */
+
+    SW_TIMER_PRESCALER_64 = TIMER1_PRESCALER_64,
+
+    /**
+    * @brief it will make the prescaler 8
+    */
+
+    SW_TIMER_PRESCALER_8 = TIMER1_PRESCALER_8,
+    /**
+     * @brief it will make the prescaler 1
+    */
+    SW_TIMER_PRESCALER_1 = TIMER1_PRESCALER_1
+
+} SW_Timer_enmPrescaler;
 
 /******************************************************************************/
 
@@ -79,6 +128,13 @@ extern "C"
 /******************************************************************************/
 /* PUBLIC FUNCTION PROTOTYPES */
 /******************************************************************************/
+
+void  SwTimer_vInit(uint16 u1Payload, SW_Timer_enmPrescaler prescaler);
+SwTimer_tenmRetStatus SwTimer_enmMakeTimer(void** ppvHnd , uint16 u16Periodicity,void (*pfnCallbcak)(void*) ,void* pvArgs);
+SwTimer_tenmRetStatus SwTimer_enmDeleteTimer(void** ppvHnd);
+SwTimer_tenmRetStatus SwTimer_enmStart(void * pvHnd);
+SwTimer_tenmRetStatus SwTimer_enmEnd(void * pvHnd);
+
 
 /******************************************************************************/
 
